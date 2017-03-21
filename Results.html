@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <style>
+            body{
+                font-family: Calibri;
+            }
+            h1, p{
+                font-family: "Calibri";
+                text-align: center;
+            }
+            th, td{
+                font-family: Calibri;
+                text-align: left;
+                border-bottom: 1px solid #ddd;
+            }
+            tr:nth-child(even){
+                background-color: #dddddd;
+            }
+            tr:hover{
+                background-color: darkgray;
+            }
+            table{
+                margin-right: auto;
+                margin-left: auto;
+            }
+            #buttons {
+                margin: auto;
+                width: 500px;
+                padding: 20px;
+            }
+            #search{
+                text-align: center;
+            }
+            #searchB{
+                background-color: white;
+                border: 2px solid #dddddd;
+                color: black;
+                transition-duration: 0.2s;
+                -webkit-transition-duration: 0.2s;
+                padding: 2px;
+            }
+            #searchB:hover{
+                background-color: #dddddd;
+                color: white;
+            }
+            .pagination{
+                background-color: white;
+                border: 2px solid #dddddd;
+                color: black;
+                transition-duration: 0.2s;
+                -webkit-transition-duration: 0.2s;
+                padding: 5px;
+            }
+            .pagination:hover{
+                background-color: #dddddd;
+                color: white;
+            }
+            td button{
+                background-color: #dddddd;
+                border: 2px solid white;
+                color: black;
+                transition-duration: 0.2s;
+                -webkit-transition-duration: 0.2s;
+                padding: 5px;
+            }
+            td button:hover{
+                background-color: white;
+                color: #dddddd;
+            }
+        </style>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+        <script type="text/javascript">
+            $(document).ready(function () {
+                $.get("https://www.cs.kent.ac.uk/people/staff/lb514/hygiene/hygiene.php",function(data){
+                        data = $.parseJSON(data);
+                        for(var i = 0; i < data.length;i++){
+                            $("#res").append("<tr>" + "<td class='business'>" + data[i].business + "</td>"+"<td>" + data[i].address + "</td>"+"<td>" + data[i].rating + "</td>"+"<td>" + data[i].date + "</td>"+"<td class='ratings'>" +'<button id="' + data[i].business + '">'+ "Get rating" +"</button>" + "</td>" + "</tr>");
+                        }
+                })
+
+                $.get("https://www.cs.kent.ac.uk/people/staff/lb514/hygiene/hygiene.php?op=pages", function (data) {
+                    var obj = $.parseJSON(data);
+                    for(var i = 1; i <= obj.pages; i++){
+                        $("#buttons").append(" " + "<button type='button' class='pagination' id=" + i + ">" + i + "</button>");
+                    }
+                })
+
+
+                $("#buttons").on('click', 'button', function () {
+                    $("#res tbody").remove();
+                    $("#res").append("<tbody></tbody>");
+                    for(var j = 1; j <= 15; j++){
+                        if($(this).attr("id") == j){
+                            $.get("https://www.cs.kent.ac.uk/people/staff/lb514/hygiene/hygiene.php?op=retrieve&page=" + j, function(data){
+                                data = $.parseJSON(data);
+                                for(var i = 0; i < data.length; i++){
+                                    $("#res").append("<tr>" + "<td class='business'>" + data[i].business + "</td>"+"<td>" + data[i].address + "</td>"+"<td>" + data[i].rating + "</td>"+"<td>" + data[i].date + "</td>"+"<td class='ratings'>" +'<button id="' + data[i].business + '">'+ "Get rating" +"</button>" + "</td>" + "</tr>");
+                                }
+                            })
+                        }
+                    }
+                })
+
+                $("#search").on('click','button',function (event) {
+                    event.preventDefault(); //to skip over the form's default "action" attribute.
+                     $("#res tbody").remove();
+                    $("#res").append("<tbody></tbody>");
+                    if($(":text").val() != null){
+                        var item = $(":text").val();
+                        $.get("https://www.cs.kent.ac.uk/people/staff/lb514/hygiene/hygiene.php?op=searchname&name=" + item, function (data) {
+                            data = $.parseJSON(data);
+                            for(var i = 0; i < data.length; i++){
+                                $("#res").append("<tr>" + "<td class='business'>" + data[i].business + "</td>"+"<td>" + data[i].address + "</td>"+"<td>" + data[i].rating + "</td>"+"<td>" + data[i].date + "</td>"+"<td class='ratings'>" +'<button id="' + data[i].business + '">'+ "Get rating" +"</button>" + "</td>" + "</tr>");
+                            }
+                        });
+                    }
+                });
+                $("#res").on('click','button', function () {
+                    $.get("https://www.cs.kent.ac.uk/people/staff/lb514/hygiene/rating.php?name=" + $(this).attr("id"), function(data){
+                        data = $.parseJSON(data);
+                        for(var i = 0; i < data.length; i++){
+                            alert(data[i].business + "\n" + data[i].address + "\n" + data[i].rating);
+                        }
+                    })
+                })
+
+            })
+
+        </script>
+
+        <title>Results</title>
+        <meta charset="utf-8">
+
+    </head>
+
+    <body>
+        <h1>Food Hygiene Ratings</h1>
+        <p>This page displays the results of all the restaurants in the local area.</p>
+        <br>
+            <form id="search">
+                Search: <input type="text" autofocus>
+                <button id="searchB"> Search </button>
+            </form>
+        <br>
+        <table id="res">
+            <thead>
+                <tr><th>Business</th><th>Address</th><th>Hygiene</th><th>Date</th><th>Get Rating</th></tr>
+            </thead>
+            <tbody>
+
+            </tbody>
+        </table>
+        <div id="buttons">
+            Pages:
+        </div>
+
+    </body>
+
+</html>
